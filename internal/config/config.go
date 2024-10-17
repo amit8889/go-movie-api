@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Env        string `yaml:"env" env:"ENV" env-required:"true"`
+	MONGO_URL  string `yaml:"MONGO_URL"  env:"MONGO_URL"`
 	HttpServer `yaml:"http_server"`
 }
 
