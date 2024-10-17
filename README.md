@@ -1,0 +1,1 @@
+RUN COMMOND : go run cmd/movie-api/main.go -config config/local.yaml
