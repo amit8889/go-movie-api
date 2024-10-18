@@ -58,6 +58,39 @@ func InsertOneDoc(db *mongo.Database, ctx context.Context, collection string, da
 	return data, nil
 }
 
+func FindAllDoc(db *mongo.Database, ctx context.Context, collection string) (map[string]interface{}, error) {
+	collectionRef := db.Collection(collection)
+	cur, err := collectionRef.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	var data []map[string]interface{}
+	for cur.Next(ctx) {
+		var item map[string]interface{}
+		err := cur.Decode(&item)
+		fmt.Println(item)
+		if err != nil {
+			return nil, err
+		}
+		data = append(data, item)
+	}
+	// count total doc
+	count, err := collectionRef.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	err = cur.Err()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(data)
+	val := map[string]interface{}{
+		"total": count,
+		"data":  data,
+	}
+	return val, nil
+}
+
 // type mongodb interface {
 // 	InsertOne(ctx context.Context, collection string, data interface{}) error
 // 	FindOne(ctx context.Context, collection string, filter interface{}) (*mongo.SingleResult, error)

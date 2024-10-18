@@ -94,3 +94,23 @@ func CreateMovie(storage *mongo.Database) http.HandlerFunc {
 
 	}
 }
+
+func GetMovies(storage *mongo.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Get Movies called : ", slog.String("ip", r.RemoteAddr))
+		cur, err := mongodb.FindAllDoc(storage, context.TODO(), "moives")
+		if err != nil {
+			response.WriteResponse(w, http.StatusInternalServerError, map[string]interface{}{
+				"message": err.Error(),
+				"success": false,
+			})
+			return
+		}
+
+		response.WriteResponse(w, http.StatusOK, map[string]interface{}{
+			"message": "Movies retrieved successfully",
+			"success": true,
+			"movies":  cur,
+		})
+	}
+}
