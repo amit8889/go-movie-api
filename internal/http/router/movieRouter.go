@@ -13,5 +13,6 @@ func MovieRouter(storage *mongo.Database) *mux.Router {
 	routers.HandleFunc("/getMovies", movies.GetMovies(storage)).Methods("GET")
 	routers.HandleFunc("/createMovie", movies.CreateMovie(storage)).Methods("POST")
 	routers.HandleFunc("/getById/{id}", movies.GetMovieById(storage)).Methods("GET")
+	routers.HandleFunc("/updateMovie", movies.UpdateMovie(storage)).Methods("PUT")
 	return routers
 }

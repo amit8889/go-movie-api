@@ -91,6 +91,38 @@ func FindAllDoc(db *mongo.Database, ctx context.Context, collection string) (map
 	return val, nil
 }
 
+func UpdateDoc(db *mongo.Database, ctx context.Context, collection string, id string, data map[string]interface{}) (map[string]interface{}, error) {
+	// Convert string ID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid ID format: %v", err)
+	}
+
+	// Create the filter and update documents
+	filter := bson.D{{"_id", objectID}}
+	update := bson.D{{"$set", data}}
+	fmt.Println("Filter:", filter)
+	fmt.Println("Update:", update)
+
+	// Get the collection reference
+	collectionRef := db.Collection(collection)
+
+	// Define options to return the updated document after update
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	// Perform the update and retrieve the updated document
+	var updatedDocument map[string]interface{}
+	err = collectionRef.FindOneAndUpdate(ctx, filter, update, opts).Decode(&updatedDocument)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("no document found with the provided ID")
+		}
+		return nil, fmt.Errorf("failed to update document: %v", err)
+	}
+
+	return updatedDocument, nil
+}
+
 // type mongodb interface {
 // 	InsertOne(ctx context.Context, collection string, data interface{}) error
 // 	FindOne(ctx context.Context, collection string, filter interface{}) (*mongo.SingleResult, error)

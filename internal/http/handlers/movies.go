@@ -3,6 +3,7 @@ package movies
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -113,4 +114,46 @@ func GetMovies(storage *mongo.Database) http.HandlerFunc {
 			"movies":  cur,
 		})
 	}
+}
+
+func UpdateMovie(storage *mongo.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Update Movie called : ", slog.String("ip", r.RemoteAddr))
+		var movie types.UpdateMovie
+		err := json.NewDecoder(r.Body).Decode(&movie)
+		if err != nil {
+			response.WriteResponse(w, http.StatusBadRequest, map[string]interface{}{
+				"message": err.Error(),
+				"success": false,
+			})
+			return
+		}
+		fmt.Println("============fmt")
+		validationErrors := response.ValidateStruct(movie)
+		if validationErrors != nil {
+			response.WriteResponse(w, http.StatusBadRequest, map[string]interface{}{
+				"message": validationErrors,
+				"success": false,
+			})
+			return
+		}
+		cur, err := mongodb.UpdateDoc(storage, context.TODO(), "moives", movie.Id, map[string]interface{}{
+			"title": movie.Title,
+			"year":  movie.Year,
+		})
+		if err != nil {
+			response.WriteResponse(w, http.StatusInternalServerError, map[string]interface{}{
+				"message": err.Error(),
+				"success": false,
+			})
+			return
+		}
+		response.WriteResponse(w, http.StatusOK, map[string]interface{}{
+			"message": "Movie updated successfully",
+			"success": true,
+			"data":    cur,
+		})
+
+	}
+
 }
